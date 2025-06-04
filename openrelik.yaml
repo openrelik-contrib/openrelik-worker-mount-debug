@@ -1,0 +1,15 @@
+# Showcase this worker on https://openrelik.org/marketplace
+publish: false
+
+# Worker Metadata. This section is required.
+display_name: Disk Image Mount Debugging
+description: Debug disk image mounting code by displaying detailed disk image information.
+
+# Optional: Third-Party Tools Used by the Worker.
+tools:
+  - display_name: Qemu 
+    description: Tools to support the mounting of different image formats.
+    url: https://www.qemu.org/docs/master/about/index.html
+  - display_name: NTFS-3G
+    description: Driver to support the mounting of NTFS disk images.
+    url: https://github.com/tuxera/ntfs-3g
