@@ -18,7 +18,7 @@ Add below to your docker compose file.
 ```
 openrelik-worker-mount-debug:
         container_name: openrelik-worker-mount-debug
-        image: ghcr.io/openrelik/openrelik-worker-mount-debug:latest
+        image: ghcr.io/openrelik-contrib/openrelik-worker-mount-debug:latest
         privileged: true
         restart: always
         environment:
