@@ -1,15 +1,18 @@
 from openrelik_worker_common.task_utils import create_task_result, get_input_files
+from openrelik_worker_common.logging import Logger
 from openrelik_worker_common.mount_utils import BlockDevice
 from openrelik_worker_common.file_utils import create_output_file
 
+from celery import signals
 from .app import celery
 from subprocess import Popen, PIPE
 
 import glob
-import logging
 import pprint
+import structlog
 
-logger = logging.getLogger(__name__)
+log = Logger()
+logger = log.get_logger(__name__)
 
 # Task name used to register and route the task to the correct queue.
 TASK_NAME = "openrelik-worker-mount-debug.tasks.mount-debug"
@@ -20,6 +23,10 @@ TASK_METADATA = {
     "description": "Mount debug worker to test and debug disk images.",
     "task_config": [],
 }
+
+@signals.task_prerun.connect
+def on_task_prerun(sender, task_id, task, args, kwargs, **_):
+    structlog.contextvars.bind_contextvars(task_id=task_id, task_name=task.name, worker_name=TASK_METADATA.get("display_name"))
 
 
 def _run_command_and_capture_output(command_string: str) -> tuple[str, str]:
@@ -59,6 +66,9 @@ def command(
     Returns:
         Base64-encoded dictionary containing task results.
     """
+    log.bind(workflow_id=workflow_id)
+    logger.info(f"Starting {TASK_NAME}")
+
     input_files = get_input_files(pipe_result, input_files or [])
     output_files = []
 
