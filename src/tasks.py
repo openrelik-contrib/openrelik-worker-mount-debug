@@ -9,7 +9,6 @@ from subprocess import Popen, PIPE
 
 import glob
 import pprint
-import structlog
 
 log = Logger()
 logger = log.get_logger(__name__)
@@ -26,7 +25,7 @@ TASK_METADATA = {
 
 @signals.task_prerun.connect
 def on_task_prerun(sender, task_id, task, args, kwargs, **_):
-    structlog.contextvars.bind_contextvars(task_id=task_id, task_name=task.name, worker_name=TASK_METADATA.get("display_name"))
+    log.bind(task_id=task_id, task_name=task.name, worker_name=TASK_METADATA.get("display_name"))
 
 
 def _run_command_and_capture_output(command_string: str) -> tuple[str, str]:
@@ -130,6 +129,8 @@ def command(
                 f.write(debug_output)
             output_files.append(output_file.to_dict())
             bd.umount()
+
+    logger.info(f"Finished {TASK_NAME}")
 
     return create_task_result(
         output_files=output_files,
