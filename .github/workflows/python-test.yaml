@@ -12,17 +12,15 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Install uv
-        uses: astral-sh/setup-uv@v6
+      uses: astral-sh/setup-uv@v6
     - name: Set up Python
       run: uv python install
       with:
         python-version-file: ".python-version"
-     - name: Install test dependencies
-       run: |
-        uv sync --group test
+    - name: Install test dependencies
+      run: uv sync --group test
     - name: Test with pytest - ${{ matrix.python-version }}
-      run: |
-        uv run pytest -s --cov=. --cov-branch --cov-report=xml -v
+      run: uv run pytest -s --cov=. --cov-branch --cov-report=xml -v
     - name: Upload coverage reports to Codecov
       uses: codecov/codecov-action@v5
       with:
