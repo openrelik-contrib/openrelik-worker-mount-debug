@@ -80,6 +80,13 @@ def command(
         debug_output = "openrelik-worker-mount-debug output:\n\n"
         debug_output += f"Processing {input_file.get('display_name')} in path {input_file.get('path')}\n\n"
         try:
+            debug_output += "\nos.system - qemu-img info output:" + "\n"
+            output, err = _run_command_and_capture_output(
+                f"/bin/bash -c 'qemu-img info {input_file["path"]}'"
+            )
+            debug_output += output
+            debug_output += err
+            
             bd = BlockDevice(input_file["path"], min_partition_size=1)
             bd.setup()
 
