@@ -257,7 +257,7 @@ test = [
 [package.metadata]
 requires-dist = [
     { name = "celery", extras = ["redis"], specifier = ">=5.4.0,<6.0.0" },
-    { name = "openrelik-worker-common", specifier = ">=0.16.0,<1.0.0" },
+    { name = "openrelik-worker-common", specifier = ">=0.17.1,<0.18.0" },
     { name = "pytest", specifier = ">=8.4.1" },
 ]
 
