@@ -5,7 +5,7 @@ authors = [
 requires-python = "<4.0,>=3.11"
 dependencies = [
     "celery[redis]<6.0.0,>=5.4.0",
-    "openrelik-worker-common<1.0.0,>=0.16.0",
+    "openrelik-worker-common (>=0.17.1,<0.18.0)",
     "pytest>=8.4.1",
 ]
 name = "openrelik-worker-mount-debug"
