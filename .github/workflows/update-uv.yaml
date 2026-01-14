@@ -1,4 +1,4 @@
-name: update-bot
+name: update-uv
 
 on:
   workflow_dispatch:
