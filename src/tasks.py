@@ -1,16 +1,15 @@
+from celery import signals
+from celery.utils.log import get_task_logger
+import glob
+import pprint
+
+from .app import celery
+from subprocess import Popen, PIPE
 
 from openrelik_common.logging import Logger
 from openrelik_worker_common.task_utils import create_task_result, get_input_files
 from openrelik_worker_common.mount_utils import BlockDevice
 from openrelik_worker_common.file_utils import create_output_file
-
-from celery import signals
-from celery.utils.log import get_task_logger
-from .app import celery
-from subprocess import Popen, PIPE
-
-import glob
-import pprint
 
 log_root = Logger()
 logger = log_root.get_logger(__name__, get_task_logger(__name__))
