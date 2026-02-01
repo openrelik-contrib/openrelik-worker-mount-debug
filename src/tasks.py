@@ -1,5 +1,5 @@
 
-from openrelik_worker.logging import Logger
+from openrelik_common.logging import Logger
 from openrelik_worker_common.task_utils import create_task_result, get_input_files
 from openrelik_worker_common.mount_utils import BlockDevice
 from openrelik_worker_common.file_utils import create_output_file
