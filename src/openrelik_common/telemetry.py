@@ -106,6 +106,8 @@ def setup_telemetry(service_name: str):
         )
         trace_exporter = http_exporter.OTLPSpanExporter(endpoint=otlp_http_endpoint)
     elif otel_mode == "otlp-default-gce":
+        # Explicitly pass credentials from the GKE Metadata Server
+        # This ignores GOOGLE_APPLICATION_CREDENTIALS
         trace_exporter = cloud_trace.CloudTraceSpanExporter(
             resource_regex=r'service.*',
             credentials=compute_engine.Credentials()
