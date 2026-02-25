@@ -46,7 +46,7 @@ import logging
 import os
 
 from google.auth import compute_engine
-from google.cloud.trace_v1 import TraceServiceClient
+from google.cloud.trace_v2 import TraceServiceClient
 
 from opentelemetry import trace
 from opentelemetry.trace.span import INVALID_SPAN
