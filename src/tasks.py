@@ -6,6 +6,7 @@ import pprint
 from .app import celery
 from subprocess import Popen, PIPE
 
+from .openrelik_common import telemetry
 from openrelik_common.logging import Logger
 from openrelik_worker_common.task_utils import create_task_result, get_input_files
 from openrelik_worker_common.mount_utils import BlockDevice
@@ -71,6 +72,9 @@ def command(
 
     input_files = get_input_files(pipe_result, input_files or [])
     output_files = []
+
+    telemetry.add_attribute_to_current_span("task_config", task_config)
+    telemetry.add_attribute_to_current_span("workflow_id", workflow_id)
 
     for input_file in input_files:
         output_file = create_output_file(
