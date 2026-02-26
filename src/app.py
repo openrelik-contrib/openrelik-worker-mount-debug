@@ -3,14 +3,13 @@ import os
 import redis
 from celery.app import Celery
 
-from .openrelik_common import telemetry
-
+from openrelik_common import telemetry
 from openrelik_worker_common.debug_utils import start_debugger
-
-telemetry.setup_telemetry('openrelik-worker-mount-debug')
 
 if os.getenv("OPENRELIK_PYDEBUG") == "1":
     start_debugger()
+
+telemetry.setup_telemetry('openrelik-worker-mount-debug')
 
 REDIS_URL = os.getenv("REDIS_URL") or "redis://localhost:6379/0"
 celery = Celery(

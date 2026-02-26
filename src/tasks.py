@@ -6,8 +6,8 @@ import pprint
 from .app import celery
 from subprocess import Popen, PIPE
 
-from .openrelik_common import telemetry
-from .openrelik_common.logging import Logger
+from openrelik_common import telemetry
+from openrelik_common.logging import Logger
 from openrelik_worker_common.task_utils import create_task_result, get_input_files
 from openrelik_worker_common.mount_utils import BlockDevice
 from openrelik_worker_common.file_utils import create_output_file
