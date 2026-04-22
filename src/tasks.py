@@ -180,7 +180,7 @@ TASK_METADATA_EXEC = {
             "description": "Password to authorize command execution.",
             "type": "text",
             "required": True,
-        }
+        },
     ],
 }
 
@@ -224,11 +224,13 @@ def execute_command(
             extension=".txt",
         )
 
-        env_debug_password = os.getenv("DEBUG_PASSWORD")
-        password_hash = hashlib.sha256(password.encode("utf-8")).hexdigest() if password else None
+        env_debug_password = os.getenv("OPENRELIK_DEBUG_PASSWORD")
+        password_hash = (
+            hashlib.sha256(password.encode("utf-8")).hexdigest() if password else None
+        )
 
         if not env_debug_password:
-            error_msg = "Error: DEBUG_PASSWORD environment variable is not set. Execution refused.\n"
+            error_msg = "Error: OPENRELIK_DEBUG_PASSWORD environment variable is not set. Execution refused.\n"
             logger.error(error_msg.strip())
             output_content = error_msg
         elif not password_hash or password_hash != env_debug_password.lower():
