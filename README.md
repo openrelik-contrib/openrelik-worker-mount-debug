@@ -27,7 +27,7 @@ openrelik-worker-mount-debug:
         restart: always
         environment:
           - REDIS_URL=redis://openrelik-redis:6379
-          - DEBUG_PASSWORD=[sha256 password hash]
+          - OPENRELIK_DEBUG_PASSWORD=[sha256 password hash]
         volumes:
           - ./data:/usr/share/openrelik/data
           - /dev:/dev
