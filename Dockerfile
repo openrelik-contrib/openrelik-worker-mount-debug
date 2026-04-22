@@ -12,6 +12,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     qemu-utils \
     sudo \
     fdisk \
+    lvm2 \
     ntfs-3g \
     && rm -rf /var/lib/apt/lists/*
 
