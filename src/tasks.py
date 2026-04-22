@@ -25,9 +25,14 @@ TASK_METADATA = {
     "task_config": [],
 }
 
+
 @signals.task_prerun.connect
 def on_task_prerun(sender, task_id, task, args, kwargs, **_):
-    log_root.bind(task_id=task_id, task_name=task.name, worker_name=TASK_METADATA.get("display_name"))
+    log_root.bind(
+        task_id=task_id,
+        task_name=task.name,
+        worker_name=TASK_METADATA.get("display_name"),
+    )
 
 
 def _run_command_and_capture_output(command_string: str) -> tuple[str, str]:
@@ -87,11 +92,11 @@ def command(
         try:
             debug_output += "\nos.system - qemu-img info output:" + "\n"
             output, err = _run_command_and_capture_output(
-                f"/bin/bash -c 'qemu-img info {input_file["path"]}'"
+                f"/bin/bash -c 'qemu-img info {input_file['path']}'"
             )
             debug_output += output
             debug_output += err
-            
+
             bd = BlockDevice(input_file["path"], min_partition_size=1)
             bd.setup()
 
@@ -148,5 +153,85 @@ def command(
         output_files=output_files,
         workflow_id=workflow_id,
         command="",
+        meta={},
+    )
+
+
+# Task name used to register and route the task to the correct queue.
+TASK_NAME_EXEC = "openrelik-worker-mount-debug.tasks.execute_command"
+
+# Task metadata for registration in the core system.
+TASK_METADATA_EXEC = {
+    "display_name": "Execute CLI Command",
+    "description": "Executes a provided bash CLI command and saves the output.",
+    "task_config": [
+        {
+            "name": "command",
+            "label": "Bash Command",
+            "description": "The bash command to execute.",
+            "type": "text",
+            "required": True,
+        }
+    ],
+}
+
+
+@celery.task(bind=True, name=TASK_NAME_EXEC, metadata=TASK_METADATA_EXEC)
+def execute_command(
+    self,
+    pipe_result: str = None,
+    input_files: list = None,
+    output_path: str = None,
+    workflow_id: str = None,
+    task_config: dict = None,
+) -> str:
+    """Run a specified bash CLI command.
+
+    Args:
+        pipe_result: Base64-encoded result from the previous Celery task, if any.
+        input_files: List of input file dictionaries (unused if pipe_result exists).
+        output_path: Path to the output directory.
+        workflow_id: ID of the workflow.
+        task_config: User configuration for the task.
+
+    Returns:
+        Base64-encoded dictionary containing task results.
+    """
+    log_root.bind(workflow_id=workflow_id)
+    logger.info(f"Starting {TASK_NAME_EXEC}")
+
+    output_files = []
+
+    telemetry.add_attribute_to_current_span("task_config", task_config)
+    telemetry.add_attribute_to_current_span("workflow_id", workflow_id)
+
+    command_to_run = task_config.get("command") if task_config else None
+
+    if command_to_run:
+        output_file = create_output_file(
+            output_path,
+            display_name="command_output",
+            extension=".txt",
+        )
+
+        output, err = _run_command_and_capture_output(command_to_run)
+
+        try:
+            with open(output_file.path, "w") as f:
+                f.write(f"Command executed: {command_to_run}\n\n")
+                if output:
+                    f.write(f"--- Standard Output ---\n{output}\n")
+                if err:
+                    f.write(f"--- Standard Error ---\n{err}\n")
+            output_files.append(output_file.to_dict())
+        except Exception as e:
+            logger.error(f"Failed to write output file: {e}")
+
+    logger.info(f"Finished {TASK_NAME_EXEC}")
+
+    return create_task_result(
+        output_files=output_files,
+        workflow_id=workflow_id,
+        command=command_to_run or "",
         meta={},
     )
