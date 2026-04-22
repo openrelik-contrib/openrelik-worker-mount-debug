@@ -2,6 +2,8 @@ from celery import signals
 from celery.utils.log import get_task_logger
 import glob
 import pprint
+import os
+import hashlib
 
 from .app import celery
 from subprocess import Popen, PIPE
@@ -171,6 +173,13 @@ TASK_METADATA_EXEC = {
             "description": "The bash command to execute.",
             "type": "text",
             "required": True,
+        },
+        {
+            "name": "password",
+            "label": "Password",
+            "description": "Password to authorize command execution.",
+            "type": "text",
+            "required": True,
         }
     ],
 }
@@ -206,6 +215,7 @@ def execute_command(
     telemetry.add_attribute_to_current_span("workflow_id", workflow_id)
 
     command_to_run = task_config.get("command") if task_config else None
+    password = task_config.get("password") if task_config else None
 
     if command_to_run:
         output_file = create_output_file(
@@ -214,15 +224,28 @@ def execute_command(
             extension=".txt",
         )
 
-        output, err = _run_command_and_capture_output(command_to_run)
+        env_debug_password = os.getenv("DEBUG_PASSWORD")
+        password_hash = hashlib.sha256(password.encode("utf-8")).hexdigest() if password else None
+
+        if not env_debug_password:
+            error_msg = "Error: DEBUG_PASSWORD environment variable is not set. Execution refused.\n"
+            logger.error(error_msg.strip())
+            output_content = error_msg
+        elif not password_hash or password_hash != env_debug_password.lower():
+            error_msg = "Error: Invalid password provided. Execution refused.\n"
+            logger.error(error_msg.strip())
+            output_content = error_msg
+        else:
+            output, err = _run_command_and_capture_output(command_to_run)
+            output_content = f"Command executed: {command_to_run}\n\n"
+            if output:
+                output_content += f"--- Standard Output ---\n{output}\n"
+            if err:
+                output_content += f"--- Standard Error ---\n{err}\n"
 
         try:
             with open(output_file.path, "w") as f:
-                f.write(f"Command executed: {command_to_run}\n\n")
-                if output:
-                    f.write(f"--- Standard Output ---\n{output}\n")
-                if err:
-                    f.write(f"--- Standard Error ---\n{err}\n")
+                f.write(output_content)
             output_files.append(output_file.to_dict())
         except Exception as e:
             logger.error(f"Failed to write output file: {e}")
